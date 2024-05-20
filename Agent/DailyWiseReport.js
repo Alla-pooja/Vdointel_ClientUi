@@ -42,15 +42,11 @@ const DailyWiseReport = () => {
   const [filterName, setFilterName] = useState("");
   const [value, setValue] = useState(null);
   const [reportDate, setReportDate] = useState('');
-  const [data, setData] = useState([]);
-  const [row, rowChange] = useState([]);
-  const [rowPerPage, rowPerPageChange] = useState(5);
-  const [isValidTo, setIsValidTo] = useState(false);
+  const [data, setData] = useState([]);  
   const [imageURL, setImageURL] = useState('');
   const [openDialogImage, setOpenDialogImage] = useState(false);
   const [openDialog, setOpenDialog] = useState(false); // State to control dialog visibility
-  const [timezones, setTimezone] = useState([]);
-  const [timezone, setZone] = useState('');
+
   const [latency, setLatency] = useState(3); // Set latency to 3 by default
   const [highlightedCount, setHighlightedCount] = useState(0);
   const [avrgTime, setAvarageTime] = useState(0);
@@ -58,14 +54,13 @@ const DailyWiseReport = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isReportDateError, setIsReportDateError] = useState(false); // State to track report date error
-  const[clientName,setClientName]=useState('');
-  const[escalation,setEscalation]=useState(0);
+  
   const columns = [
     { id: "Sno", name: "Sno" },
     { id: "date", name: "Date" },
     { id: "CameraId", name: "Camera Id" },
     { id: "devicename", name: "Camera Name" },
-    { id: "count", name: "Total Events" },
+    { id: "events_count", name: "Total Events" },
     { id: "total_minutes", name: "Time To Review(Min)" },
     { id: "Latency", name: "Latency" },
   ];
@@ -101,10 +96,6 @@ const DailyWiseReport = () => {
 
   const handleFilterByName = (event) => {
     setFilterName(event.target.value);
-  };
-
-  const handleTimeZone = (event) => {
-    setZone(event.target.value);
   };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
@@ -183,6 +174,8 @@ const DailyWiseReport = () => {
     setLatency(latencyValue);
     console.log("Updated latency:", latencyValue); // Debugging line
   };
+  const reportDay = new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' });
+  console.log("Report Day:", reportDay);
 
   // Get reports functionality
   const handleButtonClick = (event) => {
@@ -195,6 +188,10 @@ const DailyWiseReport = () => {
       console.error("Report date is not selected");
       return;
     }
+    // Calculate the day for the selected report date
+  const reportDay = new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' });
+  console.log("Report Day:", reportDay);
+
     getDailyWiseReports({
       date: reportDate,
       latency: latency // Ensure correct value assignment
@@ -305,7 +302,7 @@ const DailyWiseReport = () => {
                           {row.devicename}
                         </a>
                       </TableCell>
-                      <TableCell align="left">{row.count}</TableCell>
+                      <TableCell align="left">{row.events_count}</TableCell>
                       <TableCell align="left">{row.total_minutes}</TableCell>
                       <TableCell align="left">{row.Latency}</TableCell>
                     </TableRow>
@@ -366,41 +363,31 @@ const DailyWiseReport = () => {
                 />
               </Grid>
               <Grid item md={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    Timezone
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={timezone}
-                    label="Timezone"
-                    onChange={handleTimeZone}
-                  >
-                    {timezones.map((item, key) => (
-                      <MenuItem key={key} value={item.Id}>
-                        {item.TimeZone}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth
+                  autoComplete="TimeZone"
+                  type="text"
+                  label="TimeZone"
+                  value={selectedRow.TimeZone}
+                />
               </Grid>
               <Grid item md={6}>
-                <TextField
+              <TextField
                   fullWidth
                   autoComplete="generatedEvents"
                   type="number"
                   label="Generated Events"
-                  value={selectedRow.count}
+                  value={selectedRow.events_count}
                 />
               </Grid>
+              
               <Grid item md={6}>
                 <TextField
                   fullWidth
                   autoComplete="Escalation"
                   type="number"
                   label="No. Of Escalated Events"
-                  value={escalation}
+                  value={selectedRow.escalated_count}
                 />
               </Grid>
             </Grid>
@@ -420,9 +407,9 @@ const DailyWiseReport = () => {
                     </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell>friday</TableCell>
-                        <TableCell>6</TableCell>
-                        <TableCell>9</TableCell>
+                        <TableCell>{reportDay}</TableCell>
+                        <TableCell>{selectedRow.FromHour}</TableCell>
+                        <TableCell>{selectedRow.ToHour}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
